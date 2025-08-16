@@ -1,0 +1,53 @@
+class my_driver extends uvm_driver#(sync_fifo);
+  
+  `uvm_component_utils(my_driver)
+  
+  function new (string name = "my_driver" ,uvm_component parent = null);
+    super.new(name,parent);
+  endfunction
+  
+  virtual fifo_if vif;
+  sync_fifo sync;
+  
+  virtual function void build_phase (uvm_phase phase);
+    super.build_phase(phase);
+    sync=sync_fifo ::type_id::create("sync");
+    if(!(uvm_config_db#(virtual fifo_if)::get(this,"*","vif",vif)))
+      `uvm_fatal(get_type_name(),"virtal interface is missing")
+      endfunction
+  
+  virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    forever begin
+      seq_item_port.get_next_item(sync);
+      driv(sync);
+      seq_item_port.item_done();            `uvm_info(get_type_name(),$sformatf("wr_en=%d,rd_en=%d,din=%d",sync.wr_en,sync.rd_en,sync.din),UVM_MEDIUM)
+    end
+  endtask
+    task driv (sync_fifo sync);
+        if(sync.wr_en ==1)begin
+          @(posedge vif.clk)
+          vif.wr_en <= sync.wr_en;
+          vif.din <= sync.din;
+          @(posedge vif.clk);
+          vif.wr_en <= 0;
+        end
+        else if (sync.rd_en ==1) begin
+          @(posedge vif.clk)
+          vif.rd_en <= sync.rd_en;
+          @(posedge vif.clk);
+          vif.rd_en <= 0;
+        end
+      endtask
+endclass
+          
+          
+          
+          
+          
+      
+      
+      
+    
+    
+    

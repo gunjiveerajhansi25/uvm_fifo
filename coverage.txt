@@ -1,0 +1,47 @@
+class coverage extends uvm_component;
+  
+  `uvm_component_utils(coverage)
+  
+  function new(string name = "coverage" ,uvm_component parent = null);
+    super.new(name,parent);
+    cg=new();
+  endfunction
+  
+  uvm_analysis_imp#(sync_fifo,coverage)ana_imp;
+  sync_fifo sync;
+
+  
+   virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    ana_imp = new("ana_imp",this);
+    sync = sync_fifo ::type_id::create("sync");
+  endfunction
+  
+  
+  covergroup cg ;
+    wr_cp    : coverpoint sync.wr_en;
+    rd_cp    : coverpoint sync.rd_en;
+    din_cp   : coverpoint  sync.din{bins b1  = {[0:3]};
+                                    bins b2  = {[4:7]};}
+                                    
+    dout_cp  : coverpoint sync.dout{bins b1  = {[0:3]};
+                                    bins b2  = {[4:7]};}
+    empty_cp : coverpoint sync.empty;
+    full_cp  : coverpoint sync.full;
+    
+    //wr_rd_cross :cross wr_cp,rd_cp; 
+  endgroup
+ // cg=new();
+  
+  //Write: called by monitor through analysis port
+  function void write(sync_fifo fifo);
+    sync = fifo; // store current transaction
+    cg.sample();      //sample the cover grp
+    `uvm_info(get_full_name(),$sformatf("coverage = %0.2f",cg.get_coverage()),UVM_MEDIUM)
+  endfunction
+endclass
+  
+    
+    
+ 
+  

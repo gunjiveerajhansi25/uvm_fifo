@@ -1,0 +1,36 @@
+`include "my_pkg.sv"
+module top;
+  bit clk;
+  bit rst;
+  fifo_if vif (clk);
+    
+  fifo  dut(
+    .clk(vif.clk),
+    .rst(rst),
+    .wr_en(vif.wr_en),
+    .rd_en(vif.rd_en),
+    .data_in(vif.din),
+    .data_out(vif.dout),
+    .empty(vif.empty),
+    .full(vif.full));
+     
+  initial begin
+    clk=0;
+    forever #5 clk = ~clk;
+  end
+  initial begin
+    rst=1;
+    #10
+    rst=0;
+  end
+  
+  initial begin
+    uvm_config_db #(virtual fifo_if)::set (null, "*", "vif", vif);
+    run_test("my_test");
+   // #100 $finish;
+  end
+    initial begin 
+    $dumpfile("dumb.vcd");
+   $dumpvars;
+  end
+endmodule

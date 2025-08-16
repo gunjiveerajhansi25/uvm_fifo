@@ -1,0 +1,29 @@
+class my_agent extends uvm_agent;
+  
+  `uvm_component_utils(my_agent)
+  
+  function new(string name= "agent" , uvm_component parent = null);
+    super.new(name,parent);
+  endfunction
+  
+  my_driver    m_dri;
+  my_monitor   m_mon;
+  my_sequencer m_seqr;
+
+  
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    
+    m_dri = my_driver :: type_id::create("m_dri",this);
+    m_mon = my_monitor :: type_id :: create("m_mon",this);
+    m_seqr = my_sequencer :: type_id :: create("m_seqr",this);
+  endfunction
+  
+  virtual function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    m_dri.seq_item_port.connect(m_seqr.seq_item_export);
+  endfunction
+endclass
+   
+    
+                                     

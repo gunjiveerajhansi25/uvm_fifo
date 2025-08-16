@@ -1,0 +1,24 @@
+class sync_fifo extends uvm_sequence_item;
+       
+  rand bit         wr_en;
+  rand bit         rd_en;
+  rand bit  [2:0]  din;
+  bit  [2:0]  dout;
+       bit         empty;
+       bit         full;
+  
+  `uvm_object_utils_begin(sync_fifo)
+  `uvm_field_int(wr_en,     UVM_ALL_ON)
+  `uvm_field_int(rd_en,     UVM_ALL_ON)
+  `uvm_field_int(din,       UVM_ALL_ON)
+  `uvm_field_int(dout,      UVM_ALL_ON)
+  `uvm_field_int(empty,     UVM_ALL_ON)
+  `uvm_field_int(full,      UVM_ALL_ON)
+  `uvm_object_utils_end
+  
+  constraint fifo_sync{wr_en != rd_en;}
+  
+  function new(string name = "sync_fifo");
+    super.new(name);
+  endfunction
+endclass

@@ -1,0 +1,48 @@
+class my_sb extends uvm_scoreboard;
+  
+  `uvm_component_utils(my_sb)
+  
+  function new(string name = "sb",uvm_component parent = null);
+    super.new(name,parent);
+  endfunction
+  
+  uvm_analysis_imp #(sync_fifo,my_sb) ana_imp;
+  sync_fifo sync;
+  int check[$] ;
+  
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    ana_imp = new("ana_imp",this);
+  endfunction
+  
+  function void write(sync_fifo sync);
+    //write en din value 
+    if(sync.wr_en & !sync.full) begin 
+      check.push_front(sync.din);
+      `uvm_info(get_full_name(),$sformatf("wr_en=%0d din=%0d check=%0p",sync.wr_en,sync.din,check),	UVM_MEDIUM)
+    end
+    else if(sync.rd_en & !sync.empty) begin 
+      if(check.pop_back() == sync.dout) begin
+        `uvm_info(get_full_name(),$sformatf("check = %0p dout=%0d",check,sync.dout),UVM_MEDIUM)
+      end
+      else begin
+        `uvm_info(get_full_name(),$sformatf("data is not  same check = %0p dout=%0d",check,sync.dout),UVM_MEDIUM)
+      end
+    end
+    else begin
+        `uvm_info(get_full_name(),"fifo either FULL or EMPTY",UVM_MEDIUM)
+    end
+  endfunction 
+endclass
+
+
+        
+        
+      
+    
+  
+  
+  
+  
+  
+    

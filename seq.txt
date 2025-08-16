@@ -1,0 +1,32 @@
+class my_sequence extends uvm_sequence #(sync_fifo);
+  
+  `uvm_object_utils(my_sequence)
+  
+  function new(string name = "my_sequence");
+    super.new(name);
+  endfunction
+  
+  task body ();
+    sync_fifo sync ;
+    
+    //write_en
+     repeat(8) begin
+      sync = sync_fifo::type_id::create("sync");
+       $display("inside sequence");
+      start_item (sync);
+       assert(sync.randomize() with {sync.wr_en == 1;});
+      finish_item(sync);   
+     end
+    
+   // read_en
+     repeat (8)begin
+      start_item(sync);
+       assert(sync.randomize() with {sync.rd_en==1;});
+      finish_item(sync);
+     end
+  endtask
+endclass
+    
+    
+    
+    

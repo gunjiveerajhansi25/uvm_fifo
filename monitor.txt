@@ -1,0 +1,61 @@
+class my_monitor extends uvm_monitor;
+  
+  `uvm_component_utils(my_monitor)
+  
+  function new(string name = "my_monitor",uvm_component parent =null);
+    super.new(name,parent);
+  endfunction
+  
+  virtual fifo_if vif;
+  uvm_analysis_port #(sync_fifo) mon_ana_port;
+  sync_fifo sync;
+   
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    mon_ana_port = new("mon_ana_port",this);
+    sync = sync_fifo ::type_id::create("sync");
+    if(!(uvm_config_db#(virtual fifo_if)::get(this," ","vif",vif)))
+      `uvm_fatal(get_type_name(),"virtual interface is missing")
+  endfunction
+      
+   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    forever begin
+       @(posedge vif.clk);
+       @(posedge vif.clk);
+      if(vif.wr_en== 1)begin  //wr_wn =1 and full 0
+       sync.wr_en = vif.wr_en ;     //assigning values to sequence_item
+       sync.din = vif.din;
+       sync.rd_en = vif.rd_en; 
+       sync.full=vif.full;
+       sync.empty=vif.empty;        `uvm_info(get_type_name(),$sformatf("wr_en=%d,rd_en=%d,din=%d,dout=%d,full=%d,empty=%d",sync.wr_en,sync.rd_en,sync.din,sync.dout,sync.full,sync.empty),UVM_MEDIUM)
+      end
+      
+        else if(vif.rd_en ==1) begin  //only blocking   
+      // @(posedge vif.clk);
+       sync.rd_en = vif.rd_en;
+       sync.wr_en = vif.wr_en ;
+       sync.full=vif.full;
+       sync.empty=vif.empty;
+       #1;
+       sync.dout = vif.dout;
+      
+          `uvm_info(get_type_name(),$sformatf("wr_en=%d,rd_en=%d,din=%d,dout=%d,full=%d,empty=%d",sync.wr_en,sync.rd_en,sync.din,sync.dout,sync.full,sync.empty),UVM_MEDIUM)
+      end     
+      //`uvm_info(get_type_name(),$sformatf("wr_en=%d,rd_en=%d,din=%d,dout=%d,full=%d,empty=%d",sync.wr_en,sync.rd_en,sync.din,sync.dout,sync.full,sync.empty),UVM_MEDIUM)
+      mon_ana_port.write(sync);
+    end
+    endtask
+    endclass
+      
+      
+        
+      
+      
+        
+        
+    
+      
+      
+      
+      
